@@ -1,9 +1,8 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from sqlalchemy import create_engine, Column, TEXT, VARCHAR, LargeBinary
+from fastapi import FastAPI, HTTPExceptio
+from database import engine
 
-import uuid
-import bcrypt
+from models.base import Base
+from routes import auth
 #creating instance of fastapi
 
 
@@ -33,44 +32,7 @@ import bcrypt
 #actual code
 
 app= FastAPI()
-
-
-
-class User(Base):
-    __tablename__='users'
-
-    id=Column(TEXT, primary_key=True)
-    name=Column(VARCHAR(100))
-    email=Column(VARCHAR(100))
-    password=Column(LargeBinary)
-
-@app.post("/signup")
-
-def signup_user( user: UserCreate):
-    #extract the data from the request
-    
-    print(user.name)
-    print(user.email)
-    print(user.password)
-    #validate the data check whether user exists or not in the db
-    user_db=db.query(User).filter(User.email==user.email).first()
-    if user_db:
-        raise HTTPException(status_code=400, detail='User already exists')
-       
-    #create a new user
-    hashed_pw=bcrypt.hashpw(user.password.encode(),bcrypt.gensalt())
-    new_user=User(
-        id=str(uuid.uuid4()), 
-        name=user.name, 
-        email=user.email, 
-        password=hashed_pw)
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    return new_user
- 
-    pass
-
+app.include_router(router=auth.router, prefix='/auth')
 
 
 Base.metadata.create_all(engine)
