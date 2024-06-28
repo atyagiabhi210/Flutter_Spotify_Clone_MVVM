@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPExceptio
+from fastapi import FastAPI
 from database import engine
 
 from models.base import Base
